@@ -2,6 +2,8 @@
 
 import { clone } from 'bellajs'
 
+const env = process.env || {}
+
 const sanitizeHtmlOptions = {
   allowedTags: [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -63,4 +65,8 @@ export const setSanitizeHtmlOptions = (opts = {}) => {
   Object.keys(opts).forEach((key) => {
     sanitizeHtmlOptions[key] = clone(opts[key])
   })
+}
+
+export const getAllowedImageTypes = () => {
+  return env.ALLOWED_IMAGE_TYPES_PATTERN ?? 'jpg|jpeg|png|gif|bmp|svg'
 }

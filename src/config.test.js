@@ -1,10 +1,7 @@
 // config.test
 /* eslint-env jest */
 
-import {
-  setSanitizeHtmlOptions,
-  getSanitizeHtmlOptions
-} from './config.js'
+import { getSanitizeHtmlOptions, setSanitizeHtmlOptions } from './config.js'
 
 test('Testing setSanitizeHtmlOptions/getSanitizeHtmlOptions methods', () => {
   setSanitizeHtmlOptions({

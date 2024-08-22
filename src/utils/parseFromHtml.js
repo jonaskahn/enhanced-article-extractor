@@ -1,25 +1,23 @@
 // utils -> parseFromHtml
 
-import { stripTags, truncate, unique, pipe } from 'bellajs'
+import { pipe, stripTags, truncate, unique } from 'bellajs'
 
-import { purify, cleanify } from './html.js'
+import { cleanify, imagify, mediatify, purify, socialify } from './html.js'
 
 import {
-  isValid as isValidUrl,
-  purify as purifyUrl,
   absolutify as absolutifyUrl,
-  normalize as normalizeUrls,
   chooseBestUrl,
-  getDomain
+  getDomain,
+  isValid as isValidUrl,
+  normalize as normalizeUrls,
+  purify as purifyUrl
 } from './linker.js'
 
 import extractMetaData from './extractMetaData.js'
 
-import extractWithReadability, {
-  extractTitleWithReadability
-} from './extractWithReadability.js'
+import extractWithReadability, { extractTitleWithReadability } from './extractWithReadability.js'
 
-import { execPreParser, execPostParser } from './transformation.js'
+import { execBodyParser, execPostParser, execPreParser } from './transformation.js'
 
 import getTimeToRead from './getTimeToRead.js'
 
@@ -65,9 +63,7 @@ export default async (inputHtml, inputUrl = '', parserOptions = {}) => {
 
   // gather urls to choose the best url later
   const links = unique(
-    [url, shortlink, amphtml, canonical, inputUrl]
-      .filter(isValidUrl)
-      .map(purifyUrl)
+    [url, shortlink, amphtml, canonical, inputUrl].filter(isValidUrl).map(purifyUrl)
   )
 
   if (!links.length) {
@@ -77,7 +73,7 @@ export default async (inputHtml, inputUrl = '', parserOptions = {}) => {
   // choose the best url, which one looks like title the most
   const bestUrl = chooseBestUrl(links, title)
 
-  const fns = pipe(
+  const refinedContentChain = pipe(
     (input) => {
       return normalizeUrls(input, bestUrl)
     },
@@ -95,7 +91,7 @@ export default async (inputHtml, inputUrl = '', parserOptions = {}) => {
     }
   )
 
-  const content = fns(inputHtml)
+  const content = refinedContentChain(inputHtml)
 
   if (!content) {
     return null
@@ -113,20 +109,54 @@ export default async (inputHtml, inputUrl = '', parserOptions = {}) => {
     descriptionTruncateLen
   )
 
-  const image = metaImg ? absolutifyUrl(bestUrl, metaImg) : ''
-  const favicon = metaFav ? absolutifyUrl(bestUrl, metaFav) : ''
+  const refinedBodyHtml = pipe(
+    (input) => {
+      return normalizeUrls(input, bestUrl)
+    },
+    (input) => {
+      return execBodyParser(input, links)
+    },
+    (input) => {
+      return input ? execPostParser(input, links) : null
+    },
+    (input) => {
+      return input ? cleanify(input) : null
+    }
+  )
+
+  const refinedReadableContent = pipe(
+    (input) => {
+      return normalizeUrls(input, bestUrl)
+    },
+    (input) => {
+      return execPreParser(input, links)
+    },
+    (input) => {
+      return extractWithReadability(input, bestUrl)
+    },
+    (input) => {
+      return input ? execPostParser(input, links) : null
+    }
+  )
 
   return {
     url: bestUrl,
-    title,
-    description,
-    links,
-    image,
-    content,
-    author,
-    favicon,
     source: getDomain(bestUrl),
-    published,
+    meta: {
+      title: title,
+      description: description,
+      links: links,
+      cover: metaImg ? absolutifyUrl(bestUrl, metaImg) : '',
+      favicon: metaFav ? absolutifyUrl(bestUrl, metaFav) : '',
+      author: author,
+      published: published,
+    },
+    images: imagify(content),
+    social: socialify(refinedBodyHtml(inputHtml)),
+    media: mediatify(refinedBodyHtml(inputHtml)),
+    content: textContent,
+    readableContent: refinedReadableContent(inputHtml),
+    rawContent: content,
     ttr: getTimeToRead(textContent, wordsPerMinute),
     type,
   }

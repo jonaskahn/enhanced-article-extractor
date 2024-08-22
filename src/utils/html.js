@@ -1,13 +1,13 @@
 // utils -> html
 
 import { DOMParser } from 'linkedom'
-import sanitize from 'sanitize-html'
+import sanitizeHtml from 'sanitize-html'
 import { pipe } from 'bellajs'
 
-import { getSanitizeHtmlOptions } from '../config.js'
+import { getAllowedImageTypes, getSanitizeHtmlOptions } from '../config.js'
 
 export const purify = (html) => {
-  return sanitize(html, {
+  return sanitizeHtml(html, {
     allowedTags: false,
     allowedAttributes: false,
     allowVulnerableTags: true,
@@ -43,8 +43,51 @@ export const cleanify = (inputHtml) => {
   const doc = new DOMParser().parseFromString(inputHtml, 'text/html')
   const html = doc.documentElement.innerHTML
   return pipe(
-    input => sanitize(input, getSanitizeHtmlOptions()),
+    input => sanitizeHtml(input, getSanitizeHtmlOptions()),
     input => stripMultiLinebreaks(input),
     input => stripMultispaces(input)
   )(html)
+}
+
+export const imagify = (inputHtml) => {
+  const doc = new DOMParser().parseFromString(inputHtml, 'text/html')
+  const images = doc.querySelectorAll('img')
+  const srcMap = new Map()
+  images.forEach((item) => {
+    if (item.src && new RegExp('\\.(' + getAllowedImageTypes() + ')(.*)?$', 'i').test(item.src)) {
+      try {
+        srcMap.set(new URL(item.src).toString(), item.src)
+      } catch (e) {
+        console.warn(`Something when wrong with source image ${item.src}: ${e.message}`)
+      }
+    }
+  })
+  return Array.from(new Set(Array.from(srcMap.values())))
+}
+
+export const mediatify = (inputHtml) => {
+  const doc = new DOMParser().parseFromString(inputHtml, 'text/html')
+  const media = doc.querySelectorAll('iframe')
+  const srcMap = new Map()
+  media.forEach((item) => {
+    if (item.src && new RegExp('\\.(youtube.com|youtu.be|vimeo.com)(.*)?$', 'i').test(item.src)) {
+      try {
+        srcMap.set(new URL(item.src).toString(), item.src)
+      } catch (e) {
+        console.warn(`Something when wrong with source media: ${item.src}: ${e.message}`)
+      }
+    }
+  })
+
+  return Array.from(new Set(Array.from(srcMap.values())))
+}
+
+export const socialify = (inputHtml) => {
+  const doc = new DOMParser().parseFromString(inputHtml, 'text/html')
+  const twitters = doc.querySelectorAll('blockquote.twitter-tweet')
+  const src = []
+  twitters.forEach((item) => {
+    src.push(item.toString())
+  })
+  return src
 }

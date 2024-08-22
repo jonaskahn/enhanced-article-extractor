@@ -3,7 +3,7 @@
 
 import { readFileSync } from 'node:fs'
 
-import { isObject, hasProperty } from 'bellajs'
+import { hasProperty, isObject } from 'bellajs'
 
 import extractMetaData from './extractMetaData.js'
 

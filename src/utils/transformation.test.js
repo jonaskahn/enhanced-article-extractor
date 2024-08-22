@@ -3,11 +3,11 @@
 
 import {
   addTransformations,
-  removeTransformations,
-  getTransformations,
-  findTransformations,
+  execPostParser,
   execPreParser,
-  execPostParser
+  findTransformations,
+  getTransformations,
+  removeTransformations
 } from './transformation.js'
 
 test(' add one transformation object', () => {

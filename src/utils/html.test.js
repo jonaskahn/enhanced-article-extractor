@@ -5,9 +5,7 @@ import { readFileSync } from 'node:fs'
 
 import { isString } from 'bellajs'
 
-import {
-  cleanify
-} from './html.js'
+import { cleanify } from './html.js'
 
 describe('test cleanify() method', () => {
   test('check if unwanted elements/attributes removed', () => {

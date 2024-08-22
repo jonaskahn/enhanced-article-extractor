@@ -1,8 +1,4 @@
-// main.js
-
-import {
-  isString
-} from 'bellajs'
+import { isString } from 'bellajs'
 
 import retrieve from './utils/retrieve.js'
 import parseFromHtml from './utils/parseFromHtml.js'
@@ -15,7 +11,7 @@ export const extract = async (input, parserOptions = {}, fetchOptions = {}) => {
   }
 
   if (!isValidUrl(input)) {
-    return parseFromHtml(input, null, parserOptions || {})
+    return parseFromHtml(input, '', parserOptions)
   }
   const buffer = await retrieve(input, fetchOptions)
   const text = buffer ? Buffer.from(buffer).toString().trim() : ''

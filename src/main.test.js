@@ -8,11 +8,11 @@ import { HttpsProxyAgent } from 'https-proxy-agent'
 import nock from 'nock'
 
 import {
+  addTransformations,
   extract,
   getSanitizeHtmlOptions,
-  setSanitizeHtmlOptions,
-  addTransformations,
-  removeTransformations
+  removeTransformations,
+  setSanitizeHtmlOptions
 } from './main'
 
 const env = process.env || {}

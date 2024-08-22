@@ -5,22 +5,27 @@ import { DOMParser } from 'linkedom'
 import { isString } from 'bellajs'
 
 export default (html, url = '') => {
-  if (!isString(html)) {
+  try {
+    if (!isString(html)) {
+      return null
+    }
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const base = doc.createElement('base')
+    base.setAttribute('href', url)
+    doc.head.appendChild(base)
+    const reader = new Readability(doc, {
+      keepClasses: true,
+    })
+    const result = reader.parse() ?? {}
+    return result.textContent ? result.content : null
+  } catch (e) {
+    console.warn(e)
     return null
   }
-  const doc = new DOMParser().parseFromString(html, 'text/html')
-  const base = doc.createElement('base')
-  base.setAttribute('href', url)
-  doc.head.appendChild(base)
-  const reader = new Readability(doc, {
-    keepClasses: true,
-  })
-  const result = reader.parse() ?? {}
-  return result.textContent ? result.content : null
 }
 
 export function extractTitleWithReadability (html) {
-  if (!isString(html)) {
+  if (!isString(html) || html.length === 0) {
     return null
   }
   const doc = new DOMParser().parseFromString(html, 'text/html')

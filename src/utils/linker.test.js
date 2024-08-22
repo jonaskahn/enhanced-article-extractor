@@ -6,11 +6,11 @@ import { readFileSync } from 'node:fs'
 import { isString } from 'bellajs'
 
 import {
+  absolutify as absolutifyUrl,
   chooseBestUrl,
   isValid as isValidUrl,
-  purify as purifyUrl,
   normalize as normalizeUrls,
-  absolutify as absolutifyUrl
+  purify as purifyUrl
 } from './linker.js'
 
 describe('test isValidUrl()', () => {

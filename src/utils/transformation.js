@@ -1,6 +1,6 @@
 // utils --> transformation.js
 
-import { isArray, isFunction, clone } from 'bellajs'
+import { clone, isArray, isFunction } from 'bellajs'
 import { DOMParser } from 'linkedom'
 
 const transformations = []
@@ -60,6 +60,12 @@ export const execPreParser = (html, links) => {
   const doc = new DOMParser().parseFromString(html, 'text/html')
   findTransformations(links).map(tfm => tfm.pre).filter(fn => isFunction(fn)).map(fn => fn(doc))
   return Array.from(doc.childNodes).map(it => it.outerHTML).join('')
+}
+
+export const execBodyParser = (html, links) => {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  findTransformations(links).map(tfm => tfm.pre).filter(fn => isFunction(fn)).map(fn => fn(doc.body))
+  return Array.from(doc.body.childNodes).map(it => it.outerHTML).join('')
 }
 
 export const execPostParser = (html, links) => {
